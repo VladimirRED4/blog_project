@@ -10,6 +10,7 @@ env:
   CARGO_TERM_COLOR: always
   DATABASE_URL: postgres://postgres:postgres@localhost/blog_db_test
   JWT_SECRET: test-secret-key-for-github-actions-1234567890
+  PROTOC_VERSION: 28.3  # Последняя стабильная версия protoc
 
 jobs:
   test:
@@ -34,6 +35,15 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Install protoc
+      run: |
+        # Скачиваем protoc
+        wget https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-linux-x86_64.zip
+        unzip protoc-${PROTOC_VERSION}-linux-x86_64.zip -d $HOME/protoc
+        echo "$HOME/protoc/bin" >> $GITHUB_PATH
+        # Проверяем установку
+        protoc --version
+
     - name: Install Rust toolchain
       uses: dtolnay/rust-toolchain@stable
       with:
@@ -54,15 +64,17 @@ jobs:
     - name: Clippy
       run: cargo clippy --workspace -- -D warnings
 
-    - name: Run tests
+    - name: Install sqlx-cli
+      run: cargo install sqlx-cli --no-default-features --features postgres
+
+    - name: Setup test database
       run: |
-        # Setup test database
         cd blog-server
-        cargo install sqlx-cli
         sqlx database setup
         cd ..
-        # Run all tests
-        cargo test --workspace --verbose
+
+    - name: Run tests
+      run: cargo test --workspace --verbose
 
   build:
     name: Build
@@ -71,6 +83,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+
+    - name: Install protoc
+      run: |
+        wget https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-linux-x86_64.zip
+        unzip protoc-${PROTOC_VERSION}-linux-x86_64.zip -d $HOME/protoc
+        echo "$HOME/protoc/bin" >> $GITHUB_PATH
+        protoc --version
 
     - name: Install Rust toolchain
       uses: dtolnay/rust-toolchain@stable
@@ -87,7 +106,7 @@ jobs:
     - name: Build all targets
       run: cargo build --workspace --release
 
-    - name: Upload artifacts
+    - name: Upload server artifact
       uses: actions/upload-artifact@v4
       with:
         name: blog-server
@@ -105,6 +124,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+
+    - name: Install protoc
+      run: |
+        wget https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-linux-x86_64.zip
+        unzip protoc-${PROTOC_VERSION}-linux-x86_64.zip -d $HOME/protoc
+        echo "$HOME/protoc/bin" >> $GITHUB_PATH
+        protoc --version
 
     - name: Install Rust toolchain
       uses: dtolnay/rust-toolchain@stable
@@ -137,9 +163,17 @@ jobs:
   coverage:
     name: Code Coverage
     runs-on: ubuntu-latest
+    needs: test
 
     steps:
     - uses: actions/checkout@v4
+
+    - name: Install protoc
+      run: |
+        wget https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-linux-x86_64.zip
+        unzip protoc-${PROTOC_VERSION}-linux-x86_64.zip -d $HOME/protoc
+        echo "$HOME/protoc/bin" >> $GITHUB_PATH
+        protoc --version
 
     - name: Install Rust toolchain
       uses: dtolnay/rust-toolchain@stable
@@ -153,7 +187,7 @@ jobs:
       run: cargo llvm-cov --workspace --lcov --output-path lcov.info
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
         files: lcov.info
         fail_ci_if_error: true
@@ -164,6 +198,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+
+    - name: Install protoc
+      run: |
+        wget https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-linux-x86_64.zip
+        unzip protoc-${PROTOC_VERSION}-linux-x86_64.zip -d $HOME/protoc
+        echo "$HOME/protoc/bin" >> $GITHUB_PATH
+        protoc --version
 
     - name: Install Rust toolchain
       uses: dtolnay/rust-toolchain@stable
