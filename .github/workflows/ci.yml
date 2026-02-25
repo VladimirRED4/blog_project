@@ -17,6 +17,10 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    # Установка protoc (нужен для компиляции)
+    - name: Install protoc
+      run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
+
     # Установка Rust
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
