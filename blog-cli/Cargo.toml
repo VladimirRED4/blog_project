@@ -1,0 +1,22 @@
+[package]
+name = "blog-cli"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+blog-client = { path = "../blog-client" }
+clap = { workspace = true, features = ["derive"] }
+tokio = { workspace = true }
+anyhow = { workspace = true }
+chrono = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+dotenvy = "0.15"
+dirs = "5.0"
+colored = "2.1"
+
+[dev-dependencies]
+assert_cmd = "2.0"
+predicates = "3.1"
+serial_test = "3.0"
+tempfile = "3.8"

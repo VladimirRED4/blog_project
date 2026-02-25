@@ -1,0 +1,141 @@
+syntax = "proto3";
+
+package blog;
+
+// Сервис аутентификации
+service AuthService {
+    rpc Register (RegisterRequest) returns (RegisterResponse);
+    rpc Login (LoginRequest) returns (LoginResponse);
+    rpc Logout (LogoutRequest) returns (LogoutResponse);
+    rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse);
+}
+
+// Сервис для работы с постами
+service PostService {
+    rpc CreatePost (CreatePostRequest) returns (Post);
+    rpc GetPost (GetPostRequest) returns (Post);
+    rpc UpdatePost (UpdatePostRequest) returns (Post);
+    rpc DeletePost (DeletePostRequest) returns (DeletePostResponse);
+    rpc ListPosts (ListPostsRequest) returns (ListPostsResponse);
+}
+
+// Модель пользователя
+message User {
+    int64 id = 1;
+    string username = 2;
+    string email = 3;
+    string full_name = 4;
+    string bio = 5;
+    string avatar_url = 6;
+    string created_at = 7;
+    string updated_at = 8;
+}
+
+// Модель поста
+message Post {
+    int64 id = 1;
+    string title = 2;
+    string content = 3;
+    int64 author_id = 4;
+    User author = 5;
+    repeated string tags = 6;
+    int32 likes_count = 7;
+    int32 views_count = 8;
+    string created_at = 9;
+    string updated_at = 10;
+    bool published = 11;
+    string published_at = 12;
+}
+
+// Запросы и ответы для аутентификации
+message RegisterRequest {
+    string username = 1;
+    string email = 2;
+    string password = 3;
+    string full_name = 4;
+}
+
+message RegisterResponse {
+    int64 user_id = 1;
+    string message = 2;
+}
+
+message LoginRequest {
+    string username = 1;
+    string email = 2;
+    string password = 3;
+}
+
+message LoginResponse {
+    string token = 1;
+    string refresh_token = 2;
+    User user = 3;
+    int32 expires_in = 4;
+}
+
+message LogoutRequest {
+    string token = 1;
+}
+
+message LogoutResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+message ValidateTokenRequest {
+    string token = 1;
+}
+
+message ValidateTokenResponse {
+    bool valid = 1;
+    int64 user_id = 2;
+    User user = 3;
+}
+
+// Запросы и ответы для постов
+message CreatePostRequest {
+    string title = 1;
+    string content = 2;
+    int64 author_id = 3;
+    repeated string tags = 4;
+    bool published = 5;
+}
+
+message GetPostRequest {
+    int64 id = 1;
+}
+
+message UpdatePostRequest {
+    int64 id = 1;
+    optional string title = 2;
+    optional string content = 3;
+    repeated string tags = 4;
+    optional bool published = 5;
+}
+
+message DeletePostRequest {
+    int64 id = 1;
+    string token = 2;
+}
+
+message DeletePostResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+message ListPostsRequest {
+    int32 page = 1;
+    int32 page_size = 2;
+    string author_username = 3;
+    string tag = 4;
+    bool published_only = 5;
+    string search_query = 6;
+}
+
+message ListPostsResponse {
+    repeated Post posts = 1;
+    int32 total_count = 2;
+    int32 page = 3;
+    int32 page_size = 4;
+    int32 total_pages = 5;
+}

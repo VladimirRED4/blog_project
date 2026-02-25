@@ -1,14 +1,81 @@
+# Rust
 /target/
-**/*.rs.bk
+**/target/
 Cargo.lock
+**/Cargo.lock
 
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
 
+# Environment files
+.env
+.env.*
+!.env.example
+*.env
+
+# Blog specific
+.blog_token
+*.token
+*.key
+*.pem
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+postgres-data/
+blog-server/migrations/*.sql
+!blog-server/migrations/*.sql  # Сохраняем файлы миграций, но не данные
+
+# Logs
+*.log
+**/*.log
+/logs/
+/logs/**/*
+
+# Build artifacts
+**/*.rs.bk
+*.wasm
+pkg/
+wasm-pack/
+
+# OS files
 .DS_Store
 Thumbs.db
+desktop.ini
 
-*.log
-/logs/
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Test outputs
+**/test-results/
+**/coverage/
+**/*.profraw
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+*.pid
+
+# Certificates (для HTTPS/SSL)
+*.crt
+*.csr
+*.key
+
+# Backups
+*.bak
+*.backup
+*.old
+
+# WASM output
+**/pkg/
+**/wasm-pack/
+**/*.wasm
+**/*.wasm.d.ts
+**/*.wasm.metadata
