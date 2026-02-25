@@ -28,8 +28,6 @@ Cargo.lock
 *.sqlite
 *.sqlite3
 postgres-data/
-blog-server/migrations/*.sql
-!blog-server/migrations/*.sql  # Сохраняем файлы миграций, но не данные
 
 # Logs
 *.log
