@@ -1,5 +1,5 @@
-use tonic::{metadata::MetadataValue, transport::Channel, Request};
 use crate::error::BlogClientError;
+use tonic::{metadata::MetadataValue, transport::Channel, Request};
 
 pub use crate::proto::{
     auth_service_client::AuthServiceClient, post_service_client::PostServiceClient,

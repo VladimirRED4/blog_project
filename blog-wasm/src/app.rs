@@ -593,13 +593,9 @@ impl App {
                 self.view_edit_form(post_id, edit_title, edit_content, ctx)
             }
             _ => {
-                let edit_callback = {
-                    ctx.link().callback(move |_| Msg::EditPost(post_id))
-                };
+                let edit_callback = { ctx.link().callback(move |_| Msg::EditPost(post_id)) };
 
-                let delete_callback = {
-                    ctx.link().callback(move |_| Msg::DeletePost(post_id))
-                };
+                let delete_callback = { ctx.link().callback(move |_| Msg::DeletePost(post_id)) };
 
                 html! {
                     <div class="post" key={post_id}>
@@ -653,9 +649,7 @@ impl App {
         };
 
         // Обработчик для сохранения
-        let save_handle = {
-            ctx.link().callback(move |_| Msg::SavePost(id))
-        };
+        let save_handle = { ctx.link().callback(move |_| Msg::SavePost(id)) };
 
         // Обработчик для отмены
         let cancel_handle = ctx.link().callback(|_| Msg::CancelEdit);

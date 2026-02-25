@@ -1,14 +1,14 @@
 pub mod error;
-pub mod http_client;
 pub mod grpc_client;
+pub mod http_client;
 
 pub mod proto {
     tonic::include_proto!("blog");
 }
 
+use error::BlogClientError;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use error::BlogClientError;
 
 /// Transport type for the client
 #[derive(Debug, Clone, PartialEq)]
@@ -140,8 +140,13 @@ impl BlogClient {
                     let mut grpc = client.lock().await;
                     tracing::debug!("Got gRPC client lock for register");
 
-                    let response = grpc.register(username.clone(), email.clone(), password, full_name).await?;
-                    tracing::debug!("gRPC register response received, user_id: {}", response.user_id);
+                    let response = grpc
+                        .register(username.clone(), email.clone(), password, full_name)
+                        .await?;
+                    tracing::debug!(
+                        "gRPC register response received, user_id: {}",
+                        response.user_id
+                    );
 
                     Ok(http_client::AuthResponse {
                         token: "".to_string(),
@@ -233,7 +238,9 @@ impl BlogClient {
                             },
                         })
                     } else {
-                        Err(BlogClientError::InvalidRequest("No user data in response".into()))
+                        Err(BlogClientError::InvalidRequest(
+                            "No user data in response".into(),
+                        ))
                     }
                 } else {
                     Err(BlogClientError::TransportError(
@@ -259,7 +266,9 @@ impl BlogClient {
                     let http = client.lock().await;
                     http.create_post(title, content).await
                 } else {
-                    Err(BlogClientError::TransportError("HTTP client not initialized".into()))
+                    Err(BlogClientError::TransportError(
+                        "HTTP client not initialized".into(),
+                    ))
                 }
             }
             Transport::Grpc(_) => {
@@ -276,7 +285,9 @@ impl BlogClient {
                         updated_at: post.updated_at,
                     })
                 } else {
-                    Err(BlogClientError::TransportError("gRPC client not initialized".into()))
+                    Err(BlogClientError::TransportError(
+                        "gRPC client not initialized".into(),
+                    ))
                 }
             }
         }
@@ -290,7 +301,9 @@ impl BlogClient {
                     let http = client.lock().await;
                     http.get_post(id).await
                 } else {
-                    Err(BlogClientError::TransportError("HTTP client not initialized".into()))
+                    Err(BlogClientError::TransportError(
+                        "HTTP client not initialized".into(),
+                    ))
                 }
             }
             Transport::Grpc(_) => {
@@ -307,7 +320,9 @@ impl BlogClient {
                         updated_at: post.updated_at,
                     })
                 } else {
-                    Err(BlogClientError::TransportError("gRPC client not initialized".into()))
+                    Err(BlogClientError::TransportError(
+                        "gRPC client not initialized".into(),
+                    ))
                 }
             }
         }
@@ -326,7 +341,9 @@ impl BlogClient {
                     let http = client.lock().await;
                     http.update_post(id, title, content).await
                 } else {
-                    Err(BlogClientError::TransportError("HTTP client not initialized".into()))
+                    Err(BlogClientError::TransportError(
+                        "HTTP client not initialized".into(),
+                    ))
                 }
             }
             Transport::Grpc(_) => {
@@ -343,7 +360,9 @@ impl BlogClient {
                         updated_at: post.updated_at,
                     })
                 } else {
-                    Err(BlogClientError::TransportError("gRPC client not initialized".into()))
+                    Err(BlogClientError::TransportError(
+                        "gRPC client not initialized".into(),
+                    ))
                 }
             }
         }
@@ -357,7 +376,9 @@ impl BlogClient {
                     let http = client.lock().await;
                     http.delete_post(id).await
                 } else {
-                    Err(BlogClientError::TransportError("HTTP client not initialized".into()))
+                    Err(BlogClientError::TransportError(
+                        "HTTP client not initialized".into(),
+                    ))
                 }
             }
             Transport::Grpc(_) => {
@@ -365,7 +386,9 @@ impl BlogClient {
                     let grpc = client.lock().await;
                     grpc.delete_post(id).await
                 } else {
-                    Err(BlogClientError::TransportError("gRPC client not initialized".into()))
+                    Err(BlogClientError::TransportError(
+                        "gRPC client not initialized".into(),
+                    ))
                 }
             }
         }
@@ -383,7 +406,9 @@ impl BlogClient {
                     let http = client.lock().await;
                     http.list_posts(limit, offset).await
                 } else {
-                    Err(BlogClientError::TransportError("HTTP client not initialized".into()))
+                    Err(BlogClientError::TransportError(
+                        "HTTP client not initialized".into(),
+                    ))
                 }
             }
             Transport::Grpc(_) => {
@@ -396,20 +421,26 @@ impl BlogClient {
                     let response = grpc.list_posts(page, page_size).await?;
 
                     Ok(http_client::PostsResponse {
-                        posts: response.posts.into_iter().map(|p| http_client::PostResponse {
-                            id: p.id,
-                            title: p.title,
-                            content: p.content,
-                            author_id: p.author_id,
-                            created_at: p.created_at,
-                            updated_at: p.updated_at,
-                        }).collect(),
+                        posts: response
+                            .posts
+                            .into_iter()
+                            .map(|p| http_client::PostResponse {
+                                id: p.id,
+                                title: p.title,
+                                content: p.content,
+                                author_id: p.author_id,
+                                created_at: p.created_at,
+                                updated_at: p.updated_at,
+                            })
+                            .collect(),
                         total: response.total_count as i64,
                         limit: limit.unwrap_or(10),
                         offset: offset.unwrap_or(0),
                     })
                 } else {
-                    Err(BlogClientError::TransportError("gRPC client not initialized".into()))
+                    Err(BlogClientError::TransportError(
+                        "gRPC client not initialized".into(),
+                    ))
                 }
             }
         }

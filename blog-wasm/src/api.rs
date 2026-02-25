@@ -1,7 +1,7 @@
+use crate::models::*;
 use gloo_net::http::Request;
 use gloo_storage::{LocalStorage, Storage};
 use serde::{de::DeserializeOwned, Serialize};
-use crate::models::*;
 
 const API_BASE: &str = "http://localhost:3000";
 const TOKEN_KEY: &str = "blog_token";

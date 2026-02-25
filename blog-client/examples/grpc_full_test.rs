@@ -27,19 +27,27 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("   Username: {}", username);
     println!("   Email: {}", email);
 
-    match client.register(
-        username.clone(),
-        email.clone(),
-        password.to_string(),
-        "Test User".to_string(),
-    ).await {
+    match client
+        .register(
+            username.clone(),
+            email.clone(),
+            password.to_string(),
+            "Test User".to_string(),
+        )
+        .await
+    {
         Ok(response) => {
             println!("   ✅ Регистрация успешна!");
             println!("   📊 User ID: {}", response.user.id);
             println!("   👤 Username: {}", response.user.username);
             println!("   📧 Email: {}", response.user.email);
-            println!("   ⚠️  Токен при регистрации: {}",
-                if response.token.is_empty() { "не выдан (ожидаемо)" } else { "получен" }
+            println!(
+                "   ⚠️  Токен при регистрации: {}",
+                if response.token.is_empty() {
+                    "не выдан (ожидаемо)"
+                } else {
+                    "получен"
+                }
             );
         }
         Err(e) => println!("   ❌ Ошибка регистрации: {}", e),
@@ -71,10 +79,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Тест 3: Создание поста
     println!("📝 Тест 3: Создание поста");
-    match client.create_post(
-        "Мой первый gRPC пост".to_string(),
-        "Это тестовый пост, созданный через gRPC клиент".to_string(),
-    ).await {
+    match client
+        .create_post(
+            "Мой первый gRPC пост".to_string(),
+            "Это тестовый пост, созданный через gRPC клиент".to_string(),
+        )
+        .await
+    {
         Ok(post) => {
             println!("   ✅ Пост создан успешно!");
             println!("   📊 ID: {}", post.id);
@@ -101,11 +112,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             // Тест 5: Обновление поста
             println!("✏️ Тест 5: Обновление поста #{}", post_id);
-            match client.update_post(
-                post_id,
-                Some("Обновленный заголовок".to_string()),
-                Some("Это обновленное содержание поста".to_string()),
-            ).await {
+            match client
+                .update_post(
+                    post_id,
+                    Some("Обновленный заголовок".to_string()),
+                    Some("Это обновленное содержание поста".to_string()),
+                )
+                .await
+            {
                 Ok(post) => {
                     println!("   ✅ Пост обновлен!");
                     println!("   📌 Новый заголовок: {}", post.title);
