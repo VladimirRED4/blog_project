@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "develop" ]
   pull_request:
     branches: [ "main" ]
 
@@ -13,6 +13,7 @@ env:
 
 jobs:
   test:
+    name: Test
     runs-on: ubuntu-latest
 
     services:
@@ -24,7 +25,11 @@ jobs:
           POSTGRES_DB: blog_db_test
         ports:
           - 5432:5432
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
     - uses: actions/checkout@v4
@@ -34,9 +39,17 @@ jobs:
 
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
+      with:
+        components: rustfmt, clippy
 
-    - name: Cache
+    - name: Cache dependencies
       uses: Swatinem/rust-cache@v2
+
+    - name: Check formatting
+      run: cargo fmt --all -- --check
+
+    - name: Clippy
+      run: cargo clippy --workspace -- -D warnings
 
     - name: Install sqlx-cli
       run: cargo install sqlx-cli --no-default-features --features postgres
@@ -44,8 +57,31 @@ jobs:
     - name: Setup DB
       working-directory: blog-server
       run: |
+        # Проверяем директорию
+        echo "Current directory: $(pwd)"
+        echo "Contents:"
+        ls -la
+
+        echo ""
+        echo "Migrations directory:"
+        if [ -d "migrations" ]; then
+          ls -la migrations/
+        else
+          echo "ERROR: migrations directory not found!"
+          exit 1
+        fi
+
+        echo ""
+        echo "Creating database..."
         sqlx database create
+
+        echo ""
+        echo "Running migrations..."
         sqlx migrate run
 
-    - name: Test
-      run: cargo test --workspace
+        echo ""
+        echo "Migration status:"
+        sqlx migrate info
+
+    - name: Run tests
+      run: cargo test --workspace --verbose
