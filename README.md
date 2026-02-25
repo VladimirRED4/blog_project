@@ -1,16 +1,6 @@
 # Blog Project - Многокомпонентный блог на Rust
 
-[![Rust](https://img.shields.io/badge/Rust-1.84%2B-orange?style=flat-square&logo=rust)](https://www.rust-lang.org)
-[![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/yourusername/blog-project/ci.yml?branch=main&style=flat-square&logo=github)](https://github.com/yourusername/blog-project/actions)
-[![Coverage](https://img.shields.io/codecov/c/github/yourusername/blog-project?style=flat-square&logo=codecov)](https://codecov.io/gh/yourusername/blog-project)
-[![Dependencies](https://img.shields.io/librariesio/github/yourusername/blog-project?style=flat-square)](https://libraries.io/github/yourusername/blog-project)
-[![Last Commit](https://img.shields.io/github/last-commit/yourusername/blog-project?style=flat-square&logo=git)](https://github.com/yourusername/blog-project/commits/main)
-[![Stars](https://img.shields.io/github/stars/yourusername/blog-project?style=flat-square&logo=github)](https://github.com/yourusername/blog-project/stargazers)
-[![Forks](https://img.shields.io/github/forks/yourusername/blog-project?style=flat-square&logo=github)](https://github.com/yourusername/blog-project/network/members)
-[![Issues](https://img.shields.io/github/issues/yourusername/blog-project?style=flat-square&logo=github)](https://github.com/yourusername/blog-project/issues)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://github.com/yourusername/blog-project/pulls)
-[![Discord](https://img.shields.io/discord/000000000000000000?style=flat-square&logo=discord&label=Discord)](https://discord.gg/your-server)
+[![CI](https://github.com/yourusername/blog-project/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/blog-project/actions/workflows/ci.yml)
 
 ## 📋 Описание проекта
 
