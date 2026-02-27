@@ -58,8 +58,17 @@ impl GrpcClient {
             full_name,
         });
 
-        let response = self.auth_client.clone().register(request).await?;
-        Ok(response.into_inner())
+        let response = self.auth_client.clone()
+        .register(request)
+        .await?;
+
+        let register_response = response.into_inner();
+
+        if !register_response.token.is_empty() {
+            self.set_token(register_response.token.clone());
+        }
+
+        Ok(register_response)
     }
 
     pub async fn login(

@@ -41,14 +41,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("   📊 User ID: {}", response.user.id);
             println!("   👤 Username: {}", response.user.username);
             println!("   📧 Email: {}", response.user.email);
-            println!(
-                "   ⚠️  Токен при регистрации: {}",
-                if response.token.is_empty() {
-                    "не выдан (ожидаемо)"
-                } else {
-                    "получен"
-                }
-            );
+            println!("   🔐 Токен при регистрации: {}",
+    if response.token.is_empty() {
+        "❌ НЕ ПОЛУЧЕН (ошибка!)"
+    } else {
+        "✅ получен"
+    }
+);
+if response.token.is_empty() {
+    println!("   ❌ ОШИБКА: gRPC регистрация должна возвращать токен!");
+}
         }
         Err(e) => println!("   ❌ Ошибка регистрации: {}", e),
     }

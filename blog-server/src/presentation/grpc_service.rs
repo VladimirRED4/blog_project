@@ -107,13 +107,13 @@ impl auth_service_server::AuthService for BlogGrpcService {
             username: req.username,
             email: req.email,
             password: req.password,
-            // full_name: req.full_name,
         };
 
         match self.auth_service.register(register_req).await {
-            Ok((_token, user)) => {
+            Ok((token, user)) => {
                 let response = RegisterResponse {
                     user_id: user.id,
+                    token,
                     message: "User registered successfully".to_string(),
                 };
                 Ok(Response::new(response))
