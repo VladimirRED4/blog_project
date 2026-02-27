@@ -57,7 +57,8 @@ message RegisterRequest {
 
 message RegisterResponse {
     int64 user_id = 1;
-    string message = 2;
+    string token = 2;
+    string message = 3;
 }
 
 message LoginRequest {

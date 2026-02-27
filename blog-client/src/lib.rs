@@ -144,12 +144,22 @@ impl BlogClient {
                         .register(username.clone(), email.clone(), password, full_name)
                         .await?;
                     tracing::debug!(
-                        "gRPC register response received, user_id: {}",
-                        response.user_id
+                        "gRPC register response received, user_id: {}, token: {}",
+                        response.user_id,
+                        if response.token.is_empty() {"empty"} else {"received"}
                     );
 
+                    if !response.token.is_empty() {
+                        let token = response.token.clone();
+                        let token_clone = self.token.clone();
+                        tokio::spawn(async move {
+                            let mut token_lock = token_clone.lock().await;
+                            *token_lock = Some(token);
+                        });
+                    }
+
                     Ok(http_client::AuthResponse {
-                        token: "".to_string(),
+                        token: response.token,
                         user: http_client::UserResponse {
                             id: response.user_id,
                             username,
