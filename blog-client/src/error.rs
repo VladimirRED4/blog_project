@@ -9,7 +9,7 @@ pub enum BlogClientError {
 
     // gRPC ошибки
     #[error("gRPC error: {0}")]
-    GrpcError(tonic::Status),
+    GrpcError(#[from] tonic::Status),
 
     #[error("gRPC transport error: {0}")]
     GrpcTransportError(#[from] GrpcTransportError),
@@ -44,21 +44,5 @@ impl BlogClientError {
 
     pub fn is_unauthorized(&self) -> bool {
         matches!(self, BlogClientError::Unauthorized(_))
-    }
-}
-
-// Реализация From для tonic::Status
-impl From<tonic::Status> for BlogClientError {
-    fn from(status: tonic::Status) -> Self {
-        match status.code() {
-            tonic::Code::NotFound => BlogClientError::NotFound,
-            tonic::Code::Unauthenticated => {
-                BlogClientError::Unauthorized(status.message().to_string())
-            }
-            tonic::Code::InvalidArgument => {
-                BlogClientError::InvalidRequest(status.message().to_string())
-            }
-            _ => BlogClientError::GrpcError(status),
-        }
     }
 }

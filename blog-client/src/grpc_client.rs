@@ -59,8 +59,8 @@ impl GrpcClient {
         });
 
         let response = self.auth_client.clone()
-        .register(request)
-        .await?;
+            .register(request)
+            .await?;
 
         let register_response = response.into_inner();
 

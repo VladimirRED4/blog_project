@@ -1,6 +1,7 @@
 pub mod error;
 pub mod grpc_client;
 pub mod http_client;
+pub mod models;
 
 pub mod proto {
     tonic::include_proto!("blog");
@@ -92,7 +93,7 @@ impl BlogClient {
         email: impl Into<String>,
         password: impl Into<String>,
         full_name: impl Into<String>,
-    ) -> Result<http_client::AuthResponse, BlogClientError> {
+    ) -> Result<models::AuthResponse, BlogClientError> {
         let username = username.into();
         let email = email.into();
         let password = password.into();
@@ -128,7 +129,15 @@ impl BlogClient {
                     }
 
                     tracing::debug!("Returning response");
-                    Ok(response)
+                    Ok(models::AuthResponse {
+                        token: response.token,
+                        user: models::User {
+                            id: response.user.id,
+                            username: response.user.username,
+                            email: response.user.email,
+                            created_at: response.user.created_at,
+                        },
+                    })
                 } else {
                     Err(BlogClientError::TransportError(
                         "HTTP client not initialized".into(),
@@ -158,9 +167,9 @@ impl BlogClient {
                         });
                     }
 
-                    Ok(http_client::AuthResponse {
+                    Ok(models::AuthResponse {
                         token: response.token,
-                        user: http_client::UserResponse {
+                        user: models::User {
                             id: response.user_id,
                             username,
                             email,
@@ -181,7 +190,7 @@ impl BlogClient {
         &self,
         username: impl Into<String>,
         password: impl Into<String>,
-    ) -> Result<http_client::AuthResponse, BlogClientError> {
+    ) -> Result<models::AuthResponse, BlogClientError> {
         let username = username.into();
         let password = password.into();
 
@@ -213,7 +222,15 @@ impl BlogClient {
                     }
 
                     tracing::debug!("Returning response");
-                    Ok(response)
+                    Ok(models::AuthResponse {
+                        token: response.token,
+                        user: models::User {
+                            id: response.user.id,
+                            username: response.user.username,
+                            email: response.user.email,
+                            created_at: response.user.created_at,
+                        },
+                    })
                 } else {
                     Err(BlogClientError::TransportError(
                         "HTTP client not initialized".into(),
@@ -238,9 +255,9 @@ impl BlogClient {
                     }
 
                     if let Some(user) = response.user {
-                        Ok(http_client::AuthResponse {
+                        Ok(models::AuthResponse {
                             token: response.token,
-                            user: http_client::UserResponse {
+                            user: models::User {
                                 id: user.id,
                                 username,
                                 email: user.email,
@@ -266,7 +283,7 @@ impl BlogClient {
         &self,
         title: impl Into<String>,
         content: impl Into<String>,
-    ) -> Result<http_client::PostResponse, BlogClientError> {
+    ) -> Result<models::Post, BlogClientError> {
         let title = title.into();
         let content = content.into();
 
@@ -274,7 +291,15 @@ impl BlogClient {
             Transport::Http(_) => {
                 if let Some(client) = &self.http_client {
                     let http = client.lock().await;
-                    http.create_post(title, content).await
+                    let response = http.create_post(title, content).await?;
+                    Ok(models::Post {
+                        id: response.id,
+                        title: response.title,
+                        content: response.content,
+                        author_id: response.author_id,
+                        created_at: response.created_at,
+                        updated_at: response.updated_at,
+                    })
                 } else {
                     Err(BlogClientError::TransportError(
                         "HTTP client not initialized".into(),
@@ -285,15 +310,7 @@ impl BlogClient {
                 if let Some(client) = &self.grpc_client {
                     let grpc = client.lock().await;
                     let post = grpc.create_post(title, content).await?;
-
-                    Ok(http_client::PostResponse {
-                        id: post.id,
-                        title: post.title,
-                        content: post.content,
-                        author_id: post.author_id,
-                        created_at: post.created_at,
-                        updated_at: post.updated_at,
-                    })
+                    Ok(models::Post::from(post))
                 } else {
                     Err(BlogClientError::TransportError(
                         "gRPC client not initialized".into(),
@@ -304,12 +321,20 @@ impl BlogClient {
     }
 
     /// Get a post by ID
-    pub async fn get_post(&self, id: i64) -> Result<http_client::PostResponse, BlogClientError> {
+    pub async fn get_post(&self, id: i64) -> Result<models::Post, BlogClientError> {
         match &self.transport {
             Transport::Http(_) => {
                 if let Some(client) = &self.http_client {
                     let http = client.lock().await;
-                    http.get_post(id).await
+                    let response = http.get_post(id).await?;
+                    Ok(models::Post {
+                        id: response.id,
+                        title: response.title,
+                        content: response.content,
+                        author_id: response.author_id,
+                        created_at: response.created_at,
+                        updated_at: response.updated_at,
+                    })
                 } else {
                     Err(BlogClientError::TransportError(
                         "HTTP client not initialized".into(),
@@ -320,15 +345,7 @@ impl BlogClient {
                 if let Some(client) = &self.grpc_client {
                     let grpc = client.lock().await;
                     let post = grpc.get_post(id).await?;
-
-                    Ok(http_client::PostResponse {
-                        id: post.id,
-                        title: post.title,
-                        content: post.content,
-                        author_id: post.author_id,
-                        created_at: post.created_at,
-                        updated_at: post.updated_at,
-                    })
+                    Ok(models::Post::from(post))
                 } else {
                     Err(BlogClientError::TransportError(
                         "gRPC client not initialized".into(),
@@ -344,12 +361,20 @@ impl BlogClient {
         id: i64,
         title: Option<String>,
         content: Option<String>,
-    ) -> Result<http_client::PostResponse, BlogClientError> {
+    ) -> Result<models::Post, BlogClientError> {
         match &self.transport {
             Transport::Http(_) => {
                 if let Some(client) = &self.http_client {
                     let http = client.lock().await;
-                    http.update_post(id, title, content).await
+                    let response = http.update_post(id, title, content).await?;
+                    Ok(models::Post {
+                        id: response.id,
+                        title: response.title,
+                        content: response.content,
+                        author_id: response.author_id,
+                        created_at: response.created_at,
+                        updated_at: response.updated_at,
+                    })
                 } else {
                     Err(BlogClientError::TransportError(
                         "HTTP client not initialized".into(),
@@ -360,15 +385,7 @@ impl BlogClient {
                 if let Some(client) = &self.grpc_client {
                     let grpc = client.lock().await;
                     let post = grpc.update_post(id, title, content).await?;
-
-                    Ok(http_client::PostResponse {
-                        id: post.id,
-                        title: post.title,
-                        content: post.content,
-                        author_id: post.author_id,
-                        created_at: post.created_at,
-                        updated_at: post.updated_at,
-                    })
+                    Ok(models::Post::from(post))
                 } else {
                     Err(BlogClientError::TransportError(
                         "gRPC client not initialized".into(),
@@ -409,12 +426,25 @@ impl BlogClient {
         &self,
         limit: Option<i64>,
         offset: Option<i64>,
-    ) -> Result<http_client::PostsResponse, BlogClientError> {
+    ) -> Result<models::PostsResponse, BlogClientError> {
         match &self.transport {
             Transport::Http(_) => {
                 if let Some(client) = &self.http_client {
                     let http = client.lock().await;
-                    http.list_posts(limit, offset).await
+                    let response = http.list_posts(limit, offset).await?;
+                    Ok(models::PostsResponse {
+                        posts: response.posts.into_iter().map(|p| models::Post {
+                            id: p.id,
+                            title: p.title,
+                            content: p.content,
+                            author_id: p.author_id,
+                            created_at: p.created_at,
+                            updated_at: p.updated_at,
+                        }).collect(),
+                        total: response.total,
+                        limit: response.limit,
+                        offset: response.offset,
+                    })
                 } else {
                     Err(BlogClientError::TransportError(
                         "HTTP client not initialized".into(),
@@ -430,19 +460,8 @@ impl BlogClient {
 
                     let response = grpc.list_posts(page, page_size).await?;
 
-                    Ok(http_client::PostsResponse {
-                        posts: response
-                            .posts
-                            .into_iter()
-                            .map(|p| http_client::PostResponse {
-                                id: p.id,
-                                title: p.title,
-                                content: p.content,
-                                author_id: p.author_id,
-                                created_at: p.created_at,
-                                updated_at: p.updated_at,
-                            })
-                            .collect(),
+                    Ok(models::PostsResponse {
+                        posts: response.posts.into_iter().map(models::Post::from).collect(),
                         total: response.total_count as i64,
                         limit: limit.unwrap_or(10),
                         offset: offset.unwrap_or(0),

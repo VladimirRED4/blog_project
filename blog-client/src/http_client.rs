@@ -1,9 +1,8 @@
-use crate::error::BlogClientError;
 use reqwest::{Client, RequestBuilder, StatusCode};
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
+use crate::error::BlogClientError;
 
-// Модели для HTTP API
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UserResponse {
     pub id: i64,
@@ -100,50 +99,35 @@ impl HttpClient {
     }
 
     fn url(&self, path: &str) -> String {
-        format!(
-            "{}/{}",
-            self.base_url.trim_end_matches('/'),
-            path.trim_start_matches('/')
-        )
+        format!("{}/{}", self.base_url.trim_end_matches('/'), path.trim_start_matches('/'))
     }
 
-    pub async fn register(
-        &mut self,
-        req: RegisterRequest,
-    ) -> Result<AuthResponse, BlogClientError> {
+    pub async fn register(&mut self, req: RegisterRequest) -> Result<AuthResponse, BlogClientError> {
         let url = self.url("/api/auth/register");
-        let response = self.client.post(&url).json(&req).send().await?;
+        let response = self.client.post(&url)
+            .json(&req)
+            .send()
+            .await?;
 
         self.handle_auth_response(response).await
     }
 
     pub async fn login(&mut self, req: LoginRequest) -> Result<AuthResponse, BlogClientError> {
         let url = self.url("/api/auth/login");
-        let response = self.client.post(&url).json(&req).send().await?;
+        let response = self.client.post(&url)
+            .json(&req)
+            .send()
+            .await?;
 
         self.handle_auth_response(response).await
     }
 
-    async fn handle_auth_response(
-        &mut self,
-        response: reqwest::Response,
-    ) -> Result<AuthResponse, BlogClientError> {
+    async fn handle_auth_response(&mut self, response: reqwest::Response) -> Result<AuthResponse, BlogClientError> {
         let status = response.status();
-        println!("DEBUG - Auth response status: {}", status);
 
         match status {
             StatusCode::OK | StatusCode::CREATED => {
-                println!("DEBUG - Reading JSON response...");
-                let auth_response = match response.json::<AuthResponse>().await {
-                    Ok(resp) => {
-                        println!("DEBUG - JSON parsed successfully");
-                        resp
-                    }
-                    Err(e) => {
-                        println!("DEBUG - JSON parse error: {}", e);
-                        return Err(BlogClientError::SerializationError(e.to_string()));
-                    }
-                };
+                let auth_response = response.json::<AuthResponse>().await?;
                 self.set_token(auth_response.token.clone());
                 Ok(auth_response)
             }
@@ -158,24 +142,16 @@ impl HttpClient {
             }
             _ => {
                 let error_text = response.text().await?;
-                Err(BlogClientError::TransportError(format!(
-                    "HTTP {}: {}",
-                    status, error_text
-                )))
+                Err(BlogClientError::TransportError(format!("HTTP {}: {}", status, error_text)))
             }
         }
     }
 
-    pub async fn create_post(
-        &self,
-        title: String,
-        content: String,
-    ) -> Result<PostResponse, BlogClientError> {
+    pub async fn create_post(&self, title: String, content: String) -> Result<PostResponse, BlogClientError> {
         let url = self.url("/api/protected/posts");
         let request = CreatePostRequest { title, content };
 
-        let response = self
-            .add_auth_header(self.client.post(&url))
+        let response = self.add_auth_header(self.client.post(&url))
             .json(&request)
             .send()
             .await?;
@@ -189,17 +165,11 @@ impl HttpClient {
         self.handle_post_response(response).await
     }
 
-    pub async fn update_post(
-        &self,
-        id: i64,
-        title: Option<String>,
-        content: Option<String>,
-    ) -> Result<PostResponse, BlogClientError> {
+    pub async fn update_post(&self, id: i64, title: Option<String>, content: Option<String>) -> Result<PostResponse, BlogClientError> {
         let url = self.url(&format!("/api/protected/posts/{}", id));
         let request = UpdatePostRequest { title, content };
 
-        let response = self
-            .add_auth_header(self.client.put(&url))
+        let response = self.add_auth_header(self.client.put(&url))
             .json(&request)
             .send()
             .await?;
@@ -209,8 +179,7 @@ impl HttpClient {
 
     pub async fn delete_post(&self, id: i64) -> Result<(), BlogClientError> {
         let url = self.url(&format!("/api/protected/posts/{}", id));
-        let response = self
-            .add_auth_header(self.client.delete(&url))
+        let response = self.add_auth_header(self.client.delete(&url))
             .send()
             .await?;
 
@@ -225,19 +194,12 @@ impl HttpClient {
             StatusCode::NOT_FOUND => Err(BlogClientError::NotFound),
             _ => {
                 let error_text = response.text().await?;
-                Err(BlogClientError::TransportError(format!(
-                    "HTTP {}: {}",
-                    status, error_text
-                )))
+                Err(BlogClientError::TransportError(format!("HTTP {}: {}", status, error_text)))
             }
         }
     }
 
-    pub async fn list_posts(
-        &self,
-        limit: Option<i64>,
-        offset: Option<i64>,
-    ) -> Result<PostsResponse, BlogClientError> {
+    pub async fn list_posts(&self, limit: Option<i64>, offset: Option<i64>) -> Result<PostsResponse, BlogClientError> {
         let mut url = self.url("/api/posts");
         let mut params = vec![];
 
@@ -262,18 +224,12 @@ impl HttpClient {
             }
             _ => {
                 let error_text = response.text().await?;
-                Err(BlogClientError::TransportError(format!(
-                    "HTTP {}: {}",
-                    status, error_text
-                )))
+                Err(BlogClientError::TransportError(format!("HTTP {}: {}", status, error_text)))
             }
         }
     }
 
-    async fn handle_post_response(
-        &self,
-        response: reqwest::Response,
-    ) -> Result<PostResponse, BlogClientError> {
+    async fn handle_post_response(&self, response: reqwest::Response) -> Result<PostResponse, BlogClientError> {
         let status = response.status();
 
         match status {
@@ -288,17 +244,11 @@ impl HttpClient {
             StatusCode::NOT_FOUND => Err(BlogClientError::NotFound),
             StatusCode::FORBIDDEN => {
                 let error_text = response.text().await?;
-                Err(BlogClientError::InvalidRequest(format!(
-                    "Forbidden: {}",
-                    error_text
-                )))
+                Err(BlogClientError::InvalidRequest(format!("Forbidden: {}", error_text)))
             }
             _ => {
                 let error_text = response.text().await?;
-                Err(BlogClientError::TransportError(format!(
-                    "HTTP {}: {}",
-                    status, error_text
-                )))
+                Err(BlogClientError::TransportError(format!("HTTP {}: {}", status, error_text)))
             }
         }
     }
