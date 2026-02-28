@@ -49,18 +49,14 @@ impl GrpcClient {
         username: String,
         email: String,
         password: String,
-        full_name: String,
     ) -> Result<RegisterResponse, BlogClientError> {
         let request = Request::new(RegisterRequest {
             username,
             email,
             password,
-            full_name,
         });
 
-        let response = self.auth_client.clone()
-            .register(request)
-            .await?;
+        let response = self.auth_client.clone().register(request).await?;
 
         let register_response = response.into_inner();
 

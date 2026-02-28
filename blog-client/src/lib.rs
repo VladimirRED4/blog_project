@@ -92,12 +92,10 @@ impl BlogClient {
         username: impl Into<String>,
         email: impl Into<String>,
         password: impl Into<String>,
-        full_name: impl Into<String>,
     ) -> Result<models::AuthResponse, BlogClientError> {
         let username = username.into();
         let email = email.into();
         let password = password.into();
-        let full_name = full_name.into();
 
         tracing::debug!("Register called for username: {}", username);
 
@@ -111,7 +109,6 @@ impl BlogClient {
                         username: username.clone(),
                         email: email.clone(),
                         password,
-                        full_name,
                     };
 
                     tracing::debug!("Sending register request...");
@@ -150,12 +147,16 @@ impl BlogClient {
                     tracing::debug!("Got gRPC client lock for register");
 
                     let response = grpc
-                        .register(username.clone(), email.clone(), password, full_name)
+                        .register(username.clone(), email.clone(), password)
                         .await?;
                     tracing::debug!(
                         "gRPC register response received, user_id: {}, token: {}",
                         response.user_id,
-                        if response.token.is_empty() {"empty"} else {"received"}
+                        if response.token.is_empty() {
+                            "empty"
+                        } else {
+                            "received"
+                        }
                     );
 
                     if !response.token.is_empty() {
@@ -433,14 +434,18 @@ impl BlogClient {
                     let http = client.lock().await;
                     let response = http.list_posts(limit, offset).await?;
                     Ok(models::PostsResponse {
-                        posts: response.posts.into_iter().map(|p| models::Post {
-                            id: p.id,
-                            title: p.title,
-                            content: p.content,
-                            author_id: p.author_id,
-                            created_at: p.created_at,
-                            updated_at: p.updated_at,
-                        }).collect(),
+                        posts: response
+                            .posts
+                            .into_iter()
+                            .map(|p| models::Post {
+                                id: p.id,
+                                title: p.title,
+                                content: p.content,
+                                author_id: p.author_id,
+                                created_at: p.created_at,
+                                updated_at: p.updated_at,
+                            })
+                            .collect(),
                         total: response.total,
                         limit: response.limit,
                         offset: response.offset,

@@ -22,7 +22,7 @@ async fn test_registration() -> Result<String, String> {
             username.clone(),
             email.clone(),
             "password123".to_string(),
-            "Test User".to_string(),
+            // "Test User".to_string(),
         )
         .await
         .map_err(|e| format!("Registration failed: {}", e))?;
@@ -54,7 +54,7 @@ async fn test_login() -> Result<String, String> {
             username.clone(),
             format!("{}@example.com", username),
             password.to_string(),
-            "Login Test User".to_string(),
+            // "Login Test User".to_string(),
         )
         .await
         .map_err(|e| format!("Pre-registration failed: {}", e))?;
@@ -94,7 +94,7 @@ async fn test_crud_operations() -> Result<String, String> {
             username.clone(),
             format!("{}@example.com", username),
             password.to_string(),
-            "CRUD Test User".to_string(),
+            // "CRUD Test User".to_string(),
         )
         .await
         .map_err(|e| format!("Registration failed: {}", e))?;
@@ -170,7 +170,7 @@ async fn test_pagination() -> Result<String, String> {
             username.clone(),
             format!("{}@example.com", username),
             password.to_string(),
-            "Pagination Test User".to_string(),
+            // "Pagination Test User".to_string(),
         )
         .await
         .map_err(|e| format!("Registration failed: {}", e))?;

@@ -143,7 +143,6 @@ impl Component for App {
                     username: self.register_username.clone(),
                     email: self.register_email.clone(),
                     password: self.register_password.clone(),
-                    full_name: self.register_username.clone(),
                 };
 
                 let api = self.api.clone();
@@ -585,7 +584,6 @@ impl App {
 
         match &self.edit_state {
             EditState::Editing { id, .. } if *id == post_id => {
-                // Используем данные из локального состояния если они есть
                 let (edit_title, edit_content) = match &self.edit_form_data {
                     Some((_, title, content)) => (title.clone(), content.clone()),
                     None => (post_title, post_content),
