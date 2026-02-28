@@ -189,10 +189,9 @@ run_test "Список через gRPC" \
     "cargo run -- --grpc list --limit 5 --offset 0" \
     0 "Found"
 
-# Тест 17: Справка
 run_test "Справка" \
     "cargo run -- --help" \
-    0 "Blog CLI"
+    0 "Commands:"
 
 # Тест 18: Выход из системы (удаление токена)
 run_test "Выход из системы" \
