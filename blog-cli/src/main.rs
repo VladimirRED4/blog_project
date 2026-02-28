@@ -4,19 +4,15 @@ use clap::{Parser, Subcommand};
 use std::fs;
 use std::path::PathBuf;
 
-/// Blog CLI - интерфейс командной строки для управления блогом
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 struct Cli {
-    /// Адрес сервера (по умолчанию: http://localhost:3000 для HTTP, http://localhost:50051 для gRPC)
     #[arg(short, long)]
     server: Option<String>,
 
-    /// Использовать gRPC вместо HTTP
     #[arg(long)]
     grpc: bool,
 
-    /// Путь к файлу с токеном (по умолчанию: .blog_token в домашней директории)
     #[arg(long)]
     token_file: Option<PathBuf>,
 
@@ -26,86 +22,60 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Регистрация нового пользователя
     Register {
-        /// Имя пользователя
         #[arg(short, long)]
         username: String,
 
-        /// Email пользователя
         #[arg(short, long)]
         email: String,
 
-        /// Пароль
         #[arg(short, long)]
         password: String,
-
-        /// Полное имя (опционально)
-        #[arg(short, long)]
-        full_name: Option<String>,
     },
 
-    /// Вход в систему
     Login {
-        /// Имя пользователя
         #[arg(short, long)]
         username: String,
 
-        /// Пароль
         #[arg(short, long)]
         password: String,
     },
 
-    /// Показать информацию о текущем токене
     Status,
 
-    /// Создание нового поста
     Create {
-        /// Заголовок поста
         #[arg(short, long)]
         title: String,
 
-        /// Содержание поста
         #[arg(short, long)]
         content: String,
     },
 
-    /// Получение поста по ID
     Get {
-        /// ID поста
         #[arg(short, long)]
         id: i64,
     },
 
-    /// Обновление поста
     Update {
-        /// ID поста
         #[arg(short, long)]
         id: i64,
 
-        /// Новый заголовок (опционально)
         #[arg(short, long)]
         title: Option<String>,
 
-        /// Новое содержание (опционально)
         #[arg(short, long)]
         content: Option<String>,
     },
 
-    /// Удаление поста
     Delete {
-        /// ID поста
         #[arg(short, long)]
         id: i64,
     },
 
-    /// Список постов с пагинацией
     List {
-        /// Количество постов на странице (по умолчанию: 10)
         #[arg(short, long, default_value_t = 10)]
         limit: i64,
 
-        /// Смещение от начала (по умолчанию: 0)
         #[arg(short, long, default_value_t = 0)]
         offset: i64,
     },
@@ -132,7 +102,6 @@ impl TokenManager {
         fs::write(&self.token_path, token)
             .with_context(|| format!("Failed to save token to {:?}", self.token_path))?;
 
-        // Устанавливаем права только для владельца на Unix системах
         #[cfg(unix)]
         {
             use std::os::unix::fs::PermissionsExt;
@@ -176,7 +145,6 @@ impl TokenManager {
 async fn main() -> Result<()> {
     let cli = Cli::parse();
 
-    // Определяем транспорт
     let transport = if cli.grpc {
         let addr = cli
             .server
@@ -191,30 +159,25 @@ async fn main() -> Result<()> {
 
     println!("🔌 Connecting to: {}", transport_url(&transport));
 
-    // Создаем клиент
     let client = BlogClient::new(transport)
         .await
         .context("Failed to create blog client")?;
 
-    // Загружаем токен
     let token_manager = TokenManager::new(cli.token_file)?;
     if let Some(token) = token_manager.load_token()? {
         client.set_token(token).await;
         println!("🔑 Authenticated with saved token");
     }
 
-    // Выполняем команду
     match &cli.command {
         Commands::Register {
             username,
             email,
             password,
-            full_name,
         } => {
-            let full_name = full_name.clone().unwrap_or_else(|| username.clone());
             println!("📝 Registering user: {}", username);
 
-            match client.register(username, email, password, full_name).await {
+            match client.register(username, email, password).await {
                 Ok(response) => {
                     println!("✅ Registration successful!");
                     println!("   User ID: {}", response.user.id);

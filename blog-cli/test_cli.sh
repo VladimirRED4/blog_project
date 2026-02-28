@@ -101,7 +101,7 @@ PASSWORD="password123"
 
 # Тест 1: Регистрация нового пользователя
 run_test "Регистрация пользователя" \
-    "cargo run -- register --username \"$USERNAME\" --email \"$EMAIL\" --password \"$PASSWORD\" --full-name \"Test User\"" \
+    "cargo run -- register --username \"$USERNAME\" --email \"$EMAIL\" --password \"$PASSWORD\"" \
     0 "Registration successful"
 
 # Тест 2: Попытка повторной регистрации

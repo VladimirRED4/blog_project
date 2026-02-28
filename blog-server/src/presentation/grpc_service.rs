@@ -48,7 +48,6 @@ fn user_to_proto(user: crate::domain::user::UserResponse) -> User {
         id: user.id,
         username: user.username,
         email: user.email,
-        full_name: "".to_string(),
         bio: "".to_string(),
         avatar_url: "".to_string(),
         created_at: user.created_at.to_rfc3339(),

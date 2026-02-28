@@ -15,7 +15,6 @@ pub struct RegisterUserRequest {
     pub username: String,
     pub email: String,
     pub password: String,
-    // pub full_name: String,
 }
 
 #[derive(Debug, Deserialize)]
